@@ -8,9 +8,9 @@
 <body>
     Success
     <div>
-        {% with (success) = get_flashed_messages(category_filter=["success"])%}
-            {{ success }}
-        {% endwith %}
+        {% if validated %}
+            {{ validated }}
+        {% endif %}
     </div>
 </body>
 </html>
