@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from flask import Flask, Response, json, make_response, redirect, request, session
+from flask import Flask, make_response, redirect, request, session
 
 from validation.errors import ValidationError
 from validation.validation import Validator
@@ -31,6 +31,7 @@ class FlaskValidation:
         app.before_request(self._before_request)
         app.context_processor(self._context_processor)
         self._exclude_from_session = []
+        self._data = {}
 
     def _before_request(self):
         session["__flash_remove__"] = session.get("__flash_remove__", False)
@@ -54,21 +55,21 @@ class FlaskValidation:
 
     # middleware that excludes fields to not be saved in session
     def exclude_from_session(self, *fields: str):
-        self._exclude_from_session.extend(fields)
-        
-        def decorator(func):
-            return func
+        def wrapper(f):
+            self._exclude_from_session = [*fields]
+            return f
 
         self._exclude_from_session = []
-        return decorator
+        return wrapper
 
     def _handle_validation_error(self, error: ValidationError):
         if request.is_json:
             return make_response({"errors": error.args[0]}, 422)
-
+        print(self._handle_validation_error.__name__)
+        print(self._exclude_from_session)
         session["__errors__"] = error.args[0]
         session["__old__"] = {
-            k: v for k, v in request.form.items() if k not in self._exclude_from_session
+            k: v for k, v in self._data.items() if k not in self._exclude_from_session
         }
         session["__flash_remove__"] = False
 
@@ -76,14 +77,14 @@ class FlaskValidation:
 
     def validate(self, rules: dict, before_validation=[]):
         if request.is_json:
-            data = request.json
-        else:   
-            data = request.form.to_dict()
+            self._data = request.json
+        else:
+            self._data = request.form.to_dict()
 
         for transform in before_validation:
-            data = transform(data)
+            self._data = transform(self._data)
 
-        return Validator(data, rules).validate()
+        return Validator(self._data, rules).validate()
 
 
 def transform_to_primitive_types(fields, data, target_type):
