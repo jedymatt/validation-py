@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+
+<body>
+
+    <form action="/" method="post">
+        {% with messages = get_flashed_messages(category_filter=["errors", 'old']) %}
+        {% set (errors, old) = messages or [{},{}] %}
+        
+        {{ messages }}
+        <div>
+            <input type="text" name="name" id="name" value="{{ old.name if 'name' in old }}">
+            {% if errors %}
+            {{errors.name }}
+            {% endif %}
+        </div>
+        <div>
+            <input type="number" name="age" id="age" value="{{ old.age if 'age' in old }}">
+            {% if errors %}
+            {{errors.age}}
+            {% endif %}
+        </div>
+        <div>
+            <input type="submit" value="Submit">
+        </div>
+        {% endwith %}
+    </form>
+</body>
+
+</html>
