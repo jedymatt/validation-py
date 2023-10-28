@@ -69,7 +69,9 @@ class FlaskValidation:
         print(self._exclude_from_session)
         session["__errors__"] = error.args[0]
         session["__old__"] = {
-            k: v for k, v in self._data.items() if k not in self._exclude_from_session
+            k: v
+            for k, v in self._data.items()
+            if k not in self._exclude_from_session and v is not None
         }
         session["__flash_remove__"] = False
 
