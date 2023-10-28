@@ -118,7 +118,7 @@ def home():
             ],
         )
 
-        flash(validated, "success")
+        session['validated'] = validated
 
         return redirect("/sucess")
 
@@ -127,7 +127,19 @@ def home():
 ```
 
 To know how to access error messages, and old field values, check out `example/flask_app/templates/home.html`
+```py
+# to get all errors
+error()
+# to get value by key, defaults to "" empty string
+error('name')
+
+
+# get all old values, see the `example/flask_app/templates/home.html` on its uses
+# same as above
+old()
+old('name')
+```
 
 ## How to Contribute?
 
-Since this package is new, you can contribute by adding validation for email, float, array, password, and so on. 
+Since this package is new, you can contribute by adding validation for email, float, array, password, and so on. To make it rest API friendly, make the validation error, returned as json, customizable. When flashing a session for the old values, allow the user to exclude fields that are sensitive such as passwords, tokens, and secrets.
