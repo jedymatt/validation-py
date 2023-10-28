@@ -130,4 +130,4 @@ To know how to access error messages, and old field values, check out `example/f
 
 ## How to Contribute?
 
-Since this package is new, you can contribute by adding validation for email, float, array, and so on. 
+Since this package is new, you can contribute by adding validation for email, float, array, password, and so on. 
