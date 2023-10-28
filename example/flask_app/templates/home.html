@@ -10,26 +10,27 @@
 <body>
 
     <form action="/" method="post">
-        {% with messages = get_flashed_messages(category_filter=["errors", 'old']) %}
-        {% set (errors, old) = messages or [{},{}] %}
-        
-        {{ messages }}
         <div>
-            <input type="text" name="name" id="name" value="{{ old.name if 'name' in old }}">
-            {% if errors %}
-            {{errors.name }}
+            Errors: {{ error() }}
+        </div>
+        <div>
+            Old: {{ old() }}
+        </div>
+        <div>
+            <input type="text" name="name" id="name" value="{{ old('name') }}">
+            {% if error('name') %}
+            {{ error('name') }}
             {% endif %}
         </div>
         <div>
-            <input type="number" name="age" id="age" value="{{ old.age if 'age' in old }}">
-            {% if errors %}
-            {{errors.age}}
+            <input type="number" name="age" id="age" value="{{ old('age') }}">
+            {% if error('age') %}
+            {{ error('age')}}
             {% endif %}
         </div>
         <div>
             <input type="submit" value="Submit">
         </div>
-        {% endwith %}
     </form>
 </body>
 
