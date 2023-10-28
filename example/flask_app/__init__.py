@@ -1,10 +1,4 @@
-from flask import (
-    Flask,
-    flash,
-    redirect,
-    render_template,
-    request,
-)
+from flask import Flask, flash, redirect, render_template, request
 
 from validation import Rules
 from validation.flask_validation.flask_validation import (
