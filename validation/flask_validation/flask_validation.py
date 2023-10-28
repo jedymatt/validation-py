@@ -33,7 +33,6 @@ class FlaskValidation:
         self._exclude_from_session = []
 
     def _before_request(self):
-        print(">>>>>> before request")
         session["__flash_remove__"] = session.get("__flash_remove__", False)
 
         if not session["__flash_remove__"]:
@@ -56,12 +55,11 @@ class FlaskValidation:
     # middleware that excludes fields to not be saved in session
     def exclude_from_session(self, *fields: str):
         self._exclude_from_session.extend(fields)
-        print(self._exclude_from_session)
+        
         def decorator(func):
             return func
 
         self._exclude_from_session = []
-        print(self._exclude_from_session)
         return decorator
 
     def _handle_validation_error(self, error: ValidationError):
