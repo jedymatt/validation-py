@@ -1,5 +1,6 @@
 from typing import Iterable
-from flask import Flask, make_response, redirect, request, session, flash
+
+from flask import Flask, flash, make_response, redirect, request, session
 
 from validation.errors import ValidationError
 from validation.validation import Validator
@@ -51,8 +52,8 @@ def transform_to_primitive_types(fields, data, target_type):
                     continue
 
                 data[field] = target_type(data[field])
-            # except ValueError:
-            #     pass
+            except ValueError:
+                pass
             except TypeError:
                 pass
         else:
