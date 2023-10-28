@@ -1,16 +1,12 @@
-import json
 from flask import (
     Flask,
     flash,
-    make_response,
     redirect,
     render_template,
     request,
-    session,
 )
 
-# from app.validation import Rules, ValidationError, Validator
-from validation import Validator, Rules
+from validation import Rules
 from validation.flask_validation.flask_validation import (
     FlaskValidation,
     convert_empty_to_none,
@@ -20,6 +16,9 @@ from validation.validation_rule import ValidationRule
 
 
 def validate_age(field, value, fail):
+    if value is None or isinstance(value, str):
+        return
+
     if value < 18:
         fail(f"The {field} must be 18 or above")
 
