@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from flask import Flask, Response, make_response, redirect, request, session
+from flask import Flask, Response, json, make_response, redirect, request, session
 
 from validation.errors import ValidationError
 from validation.validation import Validator
@@ -11,6 +11,7 @@ def _old(key=None):
         return session.get("__old__", {})
 
     return session.get("__old__", {}).get(key, "")
+
 
 def _error(key=None):
     if key is None:
@@ -26,9 +27,10 @@ class FlaskValidation:
 
     def init_app(self, app: Flask):
         self.app = app
-        app.register_error_handler(ValidationError, self.handle_validation_error)
+        app.register_error_handler(ValidationError, self._handle_validation_error)
         app.before_request(self._before_request)
         app.context_processor(self._context_processor)
+        self._exclude_from_session = []
 
     def _before_request(self):
         print(">>>>>> before request")
@@ -51,21 +53,34 @@ class FlaskValidation:
             "old": _old,
         }
 
-    def handle_validation_error(self, error: ValidationError):
+    # middleware that excludes fields to not be saved in session
+    def exclude_from_session(self, *fields: str):
+        self._exclude_from_session.extend(fields)
+        print(self._exclude_from_session)
+        def decorator(func):
+            return func
+
+        self._exclude_from_session = []
+        print(self._exclude_from_session)
+        return decorator
+
+    def _handle_validation_error(self, error: ValidationError):
         if request.is_json:
             return make_response({"errors": error.args[0]}, 422)
 
         session["__errors__"] = error.args[0]
-        session["__old__"] = request.form.to_dict()
+        session["__old__"] = {
+            k: v for k, v in request.form.items() if k not in self._exclude_from_session
+        }
         session["__flash_remove__"] = False
 
         return redirect(request.url)
 
     def validate(self, rules: dict, before_validation=[]):
-        if request.method.lower() in ["post", "put", "patch", "delete"]:
+        if request.is_json:
+            data = request.json
+        else:   
             data = request.form.to_dict()
-        else:
-            data = request.args.to_dict()
 
         for transform in before_validation:
             data = transform(data)
@@ -75,7 +90,7 @@ class FlaskValidation:
 
 def transform_to_primitive_types(fields, data, target_type):
     for field in fields:
-        if is_empty(data[field]):
+        if is_empty(data.get(field)):
             continue
 
         if field in data:

@@ -1,13 +1,11 @@
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, redirect, render_template, request, session
 
 from validation import Rules
-from validation.errors import ValidationError
-from validation.flask_validation.flask_validation import (
+from validation.flask_validation import (
     FlaskValidation,
     convert_empty_to_none,
     transform_to_primitive_types,
 )
-from validation.validation import Validator
 from validation.validation_rule import ValidationRule
 
 
@@ -40,12 +38,14 @@ def create_app():
     app.secret_key = "secret"
 
     @app.route("/", methods=["GET", "POST"])
+    @validation.exclude_from_session("password")
     def home():
         if request.method == "POST":
             validated = validation.validate(
                 rules={
                     "name": [Rules.REQUIRED, Rules.STRING],
                     "age": [Rules.REQUIRED, Rules.INTEGER, AgeRule],
+                    "password": [Rules.REQUIRED, Rules.STRING],
                 },
                 before_validation=[
                     lambda data: transform_to_primitive_types(["age"], data, int),
@@ -53,7 +53,7 @@ def create_app():
                 ],
             )
 
-            session['validated'] = validated
+            session["validated"] = validated
 
             return redirect("/sucess")
 
@@ -61,6 +61,6 @@ def create_app():
 
     @app.route("/sucess")
     def success_page():
-        return render_template("success.html", validated=session.get('validated'))
+        return render_template("success.html", validated=session.get("validated"))
 
     return app

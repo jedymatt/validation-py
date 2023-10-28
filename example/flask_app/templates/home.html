@@ -29,6 +29,12 @@
             {% endif %}
         </div>
         <div>
+            <input type="password" name="password" id="password">
+            {% if error('password') %}
+            {{ error('password')}}
+            {% endif %}
+        </div>
+        <div>
             <input type="submit" value="Submit">
         </div>
     </form>

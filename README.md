@@ -140,6 +140,21 @@ old()
 old('name')
 ```
 
+To protect sensitive fields, you can add `exclude_from_session` decorator on your route method
+```py
+from validation.flask_validation
+
+
+app = Flask(__name__)
+validation = FlaskValidation(app)
+
+
+@app.route('/home')
+@validation.exclude_from_session("password", "token", "..")
+def home():
+    """perform validation here"""
+```
+
 ## How to Contribute?
 
-Since this package is new, you can contribute by adding validation for email, float, array, password, and so on. To make it rest API friendly, make the validation error, returned as json, customizable. When flashing a session for the old values, allow the user to exclude fields that are sensitive such as passwords, tokens, and secrets.
+Since this package is new, you can contribute by adding validation for email, float, array, password, and so on. To make it rest API friendly, make the validation error, returned as json, customizable.
