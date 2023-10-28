@@ -30,7 +30,6 @@ class FlaskValidation:
     def validate(self, rules: dict, before_validation=[]):
         if request.method.lower() in ["post", "put", "patch", "delete"]:
             data = request.form.to_dict()
-            print(data)
         else:
             data = request.args.to_dict()
 
