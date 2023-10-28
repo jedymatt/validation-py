@@ -1,11 +1,13 @@
-from flask import Flask, flash, redirect, render_template, request
+from flask import Flask, flash, redirect, render_template, request, session
 
 from validation import Rules
+from validation.errors import ValidationError
 from validation.flask_validation.flask_validation import (
     FlaskValidation,
     convert_empty_to_none,
     transform_to_primitive_types,
 )
+from validation.validation import Validator
 from validation.validation_rule import ValidationRule
 
 
@@ -51,7 +53,7 @@ def create_app():
                 ],
             )
 
-            flash(validated, "success")
+            session['validated'] = validated
 
             return redirect("/sucess")
 
@@ -59,6 +61,6 @@ def create_app():
 
     @app.route("/sucess")
     def success_page():
-        return render_template("success.html")
+        return render_template("success.html", validated=session.get('validated'))
 
     return app
