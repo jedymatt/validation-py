@@ -1,9 +1,22 @@
 from typing import Iterable
 
-from flask import Flask, flash, make_response, redirect, request, session
+from flask import Flask, Response, make_response, redirect, request, session
 
 from validation.errors import ValidationError
 from validation.validation import Validator
+
+
+def _old(key=None):
+    if key is None:
+        return session.get("__old__", {})
+
+    return session.get("__old__", {}).get(key, "")
+
+def _error(key=None):
+    if key is None:
+        return session.get("__errors__", {})
+
+    return session.get("__errors__", {}).get(key, "")
 
 
 class FlaskValidation:
@@ -15,16 +28,36 @@ class FlaskValidation:
         self.app = app
         app.register_error_handler(ValidationError, self.handle_validation_error)
         app.before_request(self._before_request)
+        app.context_processor(self._context_processor)
 
     def _before_request(self):
+        print(">>>>>> before request")
+        session["__flash_remove__"] = session.get("__flash_remove__", False)
+
+        if not session["__flash_remove__"]:
+            session["__flash_remove__"] = True
+        elif session["__flash_remove__"]:
+            for i in ["__errors__", "__old__"]:
+                if session.get(i, None):
+                    session.pop(i)
+
+            session["__flash_remove__"] = False
+
         session["previous_url"] = request.url
+
+    def _context_processor(self):
+        return {
+            "error": _error,
+            "old": _old,
+        }
 
     def handle_validation_error(self, error: ValidationError):
         if request.is_json:
             return make_response({"errors": error.args[0]}, 422)
 
-        flash(error.args[0], "errors")
-        flash(request.form.to_dict(), "old")
+        session["__errors__"] = error.args[0]
+        session["__old__"] = request.form.to_dict()
+        session["__flash_remove__"] = False
 
         return redirect(request.url)
 
