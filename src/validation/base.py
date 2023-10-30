@@ -47,3 +47,8 @@ class Validator(abc.ABC):
     @abc.abstractmethod
     def fails():
         pass
+
+    # @abc.abstractmethod
+    def passes() -> bool:
+        #  TODO: implement passes method
+        pass
