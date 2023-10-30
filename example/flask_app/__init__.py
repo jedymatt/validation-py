@@ -44,18 +44,9 @@ def create_app():
         if request.method == "POST":
             validated = validation.validate(
                 rules={
-                    "name": [
-                        Rules.required,
-                        Rules.string,
-                        [Rules.min, 3],
-                    ],
-                    "age": [
-                        Rules.required,
-                        Rules.integer,
-                        AgeRule,
-                        # validate_age,
-                    ],
-                    "password": [Rules.required, Rules.string],
+                    "name": [Rules.required, Rules.string],
+                    "age": [Rules.required, Rules.integer, AgeRule],
+                    "password": [Rules.required, Rules.string, [Rules.min, 8]],
                 },
                 before_validation=[
                     lambda data: transform_to_primitive_types(["age"], data, int),
