@@ -1,11 +1,24 @@
 import inspect
-from typing import Any
+from typing import Any, Iterable
 
 from validation.base import Validator as BaseValidator, Rule
 from validation.errors import InvalidRuleError, ValidationError
 from validation.rules import is_conditional_rule, rule_name
 from validation.validation_message import ValidationMessage
 from validation.validation_rule import ClosureValidationRule, ConditionalValidationRule
+
+
+def parse_array_rule(rule) -> tuple[Any, list]:
+    if isinstance(rule, list) and len(rule) == 0:
+        raise InvalidRuleError('Invalid rule: "{}"'.format(rule))
+
+    if isinstance(rule, list) and len(rule) == 1:
+        return rule[0], []
+
+    if isinstance(rule, list) and len(rule) > 1:
+        return rule[0], rule[1:]
+
+    return rule, []
 
 
 class ValidationResult:
@@ -73,17 +86,7 @@ class Validator(ValidationMessage, BaseValidator):
         for rule in rules:
             validation_rule = None
 
-            params = []
-
-            if isinstance(rule, list) and len(rule) == 0:
-                # skip if empty
-                continue
-
-            if isinstance(rule, list) and len(rule) == 1:
-                rule = rule[0]
-
-            if isinstance(rule, list) and len(rule) > 1:
-                rule, *params = rule
+            rule, params = parse_array_rule(rule)
 
             if inspect.isfunction(rule) and is_conditional_rule(rule):
                 validation_rule = ConditionalValidationRule(rule, *params)
