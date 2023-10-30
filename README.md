@@ -26,8 +26,8 @@ from validator.rules import Rules
 
 
 validator = Validator(data, rules={
-        "name": [Rules.REQUIRED, Rules.STRING],
-        "age": [Rules.REQUIRED, Rules.INTEGER, AgeRule],
+        "name": [Rules.required, Rules.string],
+        "age": [Rules.required, Rules.integer],
     })
 
 if validator.fails():
@@ -42,8 +42,8 @@ from validator.rules import Rules
 
 
 validated = Validator(data, rules={
-        "name": [Rules.REQUIRED, Rules.STRING],
-        "age": [Rules.REQUIRED, Rules.INTEGER, AgeRule],
+        "name": [Rules.required, Rules.string],
+        "age": [Rules.required, Rules.integer],
     }).validate() # immediately raise ValidationError when fails 
 
 ```
