@@ -34,7 +34,7 @@ class FlaskValidation:
         app.register_error_handler(ValidationError, self._handle_validation_error)
         app.before_request(self._before_request)
         app.context_processor(self._context_processor)
-        self._exclude_from_session = []
+        self._exclude_from_session: tuple[str] = ()
         self._data = {}
 
     def _before_request(self):
@@ -60,7 +60,7 @@ class FlaskValidation:
     # middleware that excludes fields to not be saved in session
     def exclude_from_session(self, *fields: str):
         def wrapper(f):
-            self._exclude_from_session = [*fields]
+            self._exclude_from_session = fields
             return f
 
         self._exclude_from_session = []
