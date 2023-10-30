@@ -1,29 +1,19 @@
-import abc
-from validation.error_message import ERROR_MESSAGES
-
-class ValidationRule(abc.ABC):
-    @abc.abstractmethod
-    def passes(self, field, value, message=None) -> bool:
-        pass
-
-    @abc.abstractmethod
-    def message(self) -> str:
-        pass
+from validation.base import Rule, Validator as BaseValidator
+from validation.validation_message import VALIDATION_MESSAGES
 
 
-class ClosureValidationRule(ValidationRule):
+class ClosureValidationRule(Rule):
     def __init__(self, callback) -> None:
         self.failed = False
-
         self.callback = callback
         self._message = ""
 
     def passes(self, field, value) -> bool:
         self.failed = False
 
-        def fail(message=None):
+        def fail(message: str):
             self.failed = True
-            self._message = message or f"{field} is invalid"
+            self._message = message
 
         self.callback(field, value, fail)
 
@@ -33,19 +23,26 @@ class ClosureValidationRule(ValidationRule):
         return self._message
 
 
-class ConditionValidationRule(ValidationRule):
-    def __init__(self, callback) -> None:
-        self.callback = callback
+class ConditionalValidationRule(Rule):
+    def __init__(self, callback, *parameters) -> None:
+        self._rule = callback
+        self._parameters = parameters
         self._message = ""
 
-    def passes(self, field, value, message=None) -> bool:
-        validation_rule = self.callback.__name__.replace("validate_", "")
+    def passes(self, field, value) -> bool:
+        self._field = field
 
-        self._message = message or f"{ERROR_MESSAGES[validation_rule]}".format(
-            field=field
-        )
+        return self._rule(field, value, *self._parameters)
 
-        return self.callback(value)
+    def set_message(self, message):
+        self._message = message
+
+        return self
 
     def message(self) -> str:
         return self._message
+
+    def set_validator(self, validator: BaseValidator):
+        self._validator = validator
+
+        return self

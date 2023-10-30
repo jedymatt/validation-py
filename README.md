@@ -90,7 +90,7 @@ Go to `example/flask_app` for more info
 ```py
 # ...
 from validation import Rules
-from validation.flask_validation.flask_validation import (
+from flask_validation import (
     FlaskValidation,
     convert_empty_to_none,
     transform_to_primitive_types,
@@ -109,8 +109,8 @@ def home():
     if request.method == "POST":
         validated = validation.validate(
             rules={
-                "name": [Rules.REQUIRED, Rules.STRING],
-                "age": [Rules.REQUIRED, Rules.INTEGER, AgeRule],
+                "name": [Rules.required, Rules.string, [Rules.min, 3]],
+                "age": [Rules.required, Rules.integer, AgeRule], # AgeRule is a custom Rule class
             },
             before_validation=[
                 lambda data: transform_to_primitive_types(["age"], data, int),
@@ -123,7 +123,6 @@ def home():
         return redirect("/sucess")
 
     return render_template("home.html")
-
 ```
 
 To know how to access error messages, and old field values, check out `example/flask_app/templates/home.html`

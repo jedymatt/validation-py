@@ -1,15 +1,11 @@
 import inspect
 from typing import Any
-from validation.errors import InvalidRuleError, ValidationError
 
-from validation.validation_methods import (
-    get_validation_method,
-)
-from validation.validation_rule import (
-    ClosureValidationRule,
-    ConditionValidationRule,
-    ValidationRule,
-)
+from validation.base import Validator as BaseValidator, Rule
+from validation.errors import InvalidRuleError, ValidationError
+from validation.rules import is_conditional_rule, rule_name
+from validation.validation_message import ValidationMessage
+from validation.validation_rule import ClosureValidationRule, ConditionalValidationRule
 
 
 class ValidationResult:
@@ -27,7 +23,7 @@ class FailedResult(ValidationResult):
         self.message = message
 
 
-class Validator:
+class Validator(ValidationMessage, BaseValidator):
     def __init__(self, data: dict[str, Any], rules: dict[str, Any]) -> None:
         self._data = data
         self._rules = rules
@@ -75,22 +71,46 @@ class Validator:
 
     def _validate_by_rules(self, field, value, rules) -> ValidationResult:
         for rule in rules:
-            if isinstance(rule, str):
-                condition = get_validation_method(rule)
-                validation_rule = ConditionValidationRule(condition)
+            validation_rule = None
 
-            if inspect.isfunction(rule):
+            params = []
+
+            if isinstance(rule, list) and len(rule) == 0:
+                # skip if empty
+                continue
+
+            if isinstance(rule, list) and len(rule) == 1:
+                rule = rule[0]
+
+            if isinstance(rule, list) and len(rule) > 1:
+                rule, *params = rule
+
+            if inspect.isfunction(rule) and is_conditional_rule(rule):
+                validation_rule = ConditionalValidationRule(rule, *params)
+
+            if inspect.isfunction(rule) and not is_conditional_rule(rule):
                 validation_rule = ClosureValidationRule(rule)
 
-            if inspect.isclass(rule) and issubclass(rule, ValidationRule):
+            if inspect.isclass(rule) and issubclass(rule, Rule):
                 validation_rule = rule()
 
-            if validation_rule is None or not isinstance(
-                validation_rule, ValidationRule
-            ):
+            if isinstance(rule, Rule):
+                validation_rule = rule
+
+            if validation_rule is None or not isinstance(validation_rule, Rule):
                 raise InvalidRuleError('Invalid rule: "{}"'.format(rule))
 
             if not validation_rule.passes(field, value):
+                if isinstance(validation_rule, ConditionalValidationRule):
+                    rule_message = self.get_rule_message(field, rule_name(rule))
+
+                    if rule in self.size_rules and len(params) == 1:
+                        rule_message = rule_message.format(field=field, value=params[0])
+                    else:
+                        rule_message = rule_message.format(field=field)
+
+                    validation_rule.set_message(rule_message)
+
                 return FailedResult(validation_rule.message())
 
         return ValidResult(field, value)

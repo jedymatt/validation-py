@@ -1,12 +1,13 @@
 from flask import Flask, redirect, render_template, request, session
 
-from validation import Rules
 from flask_validation import (
     FlaskValidation,
     convert_empty_to_none,
     transform_to_primitive_types,
 )
-from validation.validation_rule import ValidationRule
+from validation import Rules
+from validation.base import Rule
+from validation.rules import conditional_rule
 
 
 def validate_age(field, value, fail):
@@ -17,7 +18,7 @@ def validate_age(field, value, fail):
         fail(f"The {field} must be 18 or above")
 
 
-class AgeRule(ValidationRule):
+class AgeRule(Rule):
     def passes(self, field, value):
         self._field = field
 
@@ -43,9 +44,18 @@ def create_app():
         if request.method == "POST":
             validated = validation.validate(
                 rules={
-                    "name": [Rules.REQUIRED, Rules.STRING],
-                    "age": [Rules.REQUIRED, Rules.INTEGER, AgeRule],
-                    "password": [Rules.REQUIRED, Rules.STRING],
+                    "name": [
+                        Rules.required,
+                        Rules.string,
+                        [Rules.min, 3],
+                    ],
+                    "age": [
+                        Rules.required,
+                        Rules.integer,
+                        AgeRule,
+                        validate_age,
+                    ],
+                    "password": [Rules.required, Rules.string],
                 },
                 before_validation=[
                     lambda data: transform_to_primitive_types(["age"], data, int),

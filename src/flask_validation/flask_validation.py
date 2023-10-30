@@ -65,8 +65,7 @@ class FlaskValidation:
     def _handle_validation_error(self, error: ValidationError):
         if request.is_json:
             return make_response({"errors": error.args[0]}, 422)
-        print(self._handle_validation_error.__name__)
-        print(self._exclude_from_session)
+
         session["__errors__"] = error.args[0]
         session["__old__"] = {
             k: v
