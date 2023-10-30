@@ -12,6 +12,11 @@ VALIDATION_MESSAGES = {
         # "iterable": "The {field} field must have at least {value} items.",
         "numeric": "The {field} field must be at least {value}.",
     },
+    "max": {
+        "string": "The {field} field must not exceed {value} characters.",
+        # "iterable": "The {field} field must not have more than {value} items.",
+        "numeric": "The {field} field must not be greater than {value}.",
+    },
     "in": "The {field} field must be one of the following: {values}.",
 }
 

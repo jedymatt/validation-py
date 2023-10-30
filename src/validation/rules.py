@@ -59,3 +59,19 @@ class Rules:
             return len(value) >= parameters[0]
 
         return value >= parameters[0]
+
+    @staticmethod
+    @conditional_rule
+    def max(field, value, *parameters) -> bool:
+        """
+        The field under validation must be less than or equal to a maximum value.
+        """
+        require_params_length(1, parameters, "max")
+
+        if isinstance(value, str):
+            return len(value.strip()) <= parameters[0]
+
+        if isinstance(value, Iterable):
+            return len(value) <= parameters[0]
+
+        return value <= parameters[0]
