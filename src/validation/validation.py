@@ -105,13 +105,9 @@ class Validator(ValidationMessage, BaseValidator):
 
             if not validation_rule.passes(field, value):
                 if isinstance(validation_rule, ConditionalValidationRule):
-                    rule_message = self.get_rule_message(field, rule_name(rule))
-
-                    if rule in self.size_rules and len(params) == 1:
-                        rule_message = rule_message.format(field=field, value=params[0])
-                    else:
-                        rule_message = rule_message.format(field=field)
-
+                    rule_message = self.get_message(field, rule)
+                    rule_message = self.format_message(rule_message, field, rule, *params)
+                   
                     validation_rule.set_message(rule_message)
 
                 return FailedResult(validation_rule.message())
