@@ -29,17 +29,6 @@ class MessageReplacer:
 
 
 class ValidationMessage(MessageReplacer, BaseValidator):
-    def get_rule_message(self, field: str, rule: str) -> str:
-        message = VALIDATION_MESSAGES.get(rule)
-
-        if message is None:
-            raise KeyError("The rule is not valid.")
-
-        if isinstance(message, dict):
-            return message[self.get_field_type(field)]
-
-        return message
-
     def get_message(self, field, rule: Callable):
         if rule in self.size_rules:
             return self.get_size_message(field, rule)
