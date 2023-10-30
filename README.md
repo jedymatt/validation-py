@@ -157,3 +157,10 @@ def home():
 ## How to Contribute?
 
 Since this package is new, you can contribute by adding validation for email, float, array, password, and so on. To make it rest API friendly, make the validation error, returned as json, customizable.
+
+
+### To-Do Rules
+
+- list
+- dict
+- float
