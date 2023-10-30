@@ -53,7 +53,7 @@ def create_app():
                         Rules.required,
                         Rules.integer,
                         AgeRule,
-                        validate_age,
+                        # validate_age,
                     ],
                     "password": [Rules.required, Rules.string],
                 },
