@@ -5,19 +5,23 @@ from flask import Flask, make_response, redirect, request, session
 from validation.errors import ValidationError
 from validation.validation import Validator
 
+__OLD__ = "__old__"
+__ERRORS__ = "__errors__"
+__FLASH_REMOVE__ = "__flash_remove__"
+
 
 def _old(key=None):
     if key is None:
-        return session.get("__old__", {})
+        return session.get(__OLD__, {})
 
-    return session.get("__old__", {}).get(key, "")
+    return session.get(__OLD__, {}).get(key, "")
 
 
 def _error(key=None):
     if key is None:
-        return session.get("__errors__", {})
+        return session.get(__ERRORS__, {})
 
-    return session.get("__errors__", {}).get(key, "")
+    return session.get(__ERRORS__, {}).get(key, "")
 
 
 class FlaskValidation:
@@ -34,16 +38,16 @@ class FlaskValidation:
         self._data = {}
 
     def _before_request(self):
-        session["__flash_remove__"] = session.get("__flash_remove__", False)
+        session[__FLASH_REMOVE__] = session.get(__FLASH_REMOVE__, False)
 
-        if not session["__flash_remove__"]:
-            session["__flash_remove__"] = True
-        elif session["__flash_remove__"]:
-            for i in ["__errors__", "__old__"]:
+        if not session[__FLASH_REMOVE__]:
+            session[__FLASH_REMOVE__] = True
+        elif session[__FLASH_REMOVE__]:
+            for i in [__ERRORS__, __OLD__]:
                 if session.get(i, None):
                     session.pop(i)
 
-            session["__flash_remove__"] = False
+            session[__FLASH_REMOVE__] = False
 
         session["previous_url"] = request.url
 
@@ -65,15 +69,14 @@ class FlaskValidation:
     def _handle_validation_error(self, error: ValidationError):
         if request.is_json:
             return make_response({"errors": error.args[0]}, 422)
-        print(self._handle_validation_error.__name__)
-        print(self._exclude_from_session)
-        session["__errors__"] = error.args[0]
-        session["__old__"] = {
+
+        session[__ERRORS__] = error.args[0]
+        session[__OLD__] = {
             k: v
             for k, v in self._data.items()
             if k not in self._exclude_from_session and v is not None
         }
-        session["__flash_remove__"] = False
+        session[__FLASH_REMOVE__] = False
 
         return redirect(request.url)
 
