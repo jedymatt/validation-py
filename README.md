@@ -11,7 +11,8 @@ Features:
 
 
 ```sh
-pip intall https://github.com/jedymatt/validation-py@<tag>
+pip install -e git://github.com/jedymatt/validation-py.git@v0.2.0#egg=validation-py
+pip intall https://github.com/jedymatt/validation-py.git@v0.2.0
 ```
 
 
